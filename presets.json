@@ -1,0 +1,4 @@
+{
+  "zenquotes": { "url": "https://zenquotes.io/api/today", "parse": "json", "field": "[0].q" },
+  "jinrishici": { "url": "https://v1.jinrishici.com/all.txt", "parse": "text" }
+}

@@ -34,11 +34,11 @@ $detail = switch ($toolName) {
     { $_ -in @('Glob', 'Grep') } {
         "$toolName`: $($toolInput.pattern)"
     }
-    'Bash' {
-        "Bash: $($toolInput.description)"
+    { $_ -in @('Bash', 'Task') } {
+        "$toolName`: $($toolInput.description)"
     }
-    'Task' {
-        "Task: $($toolInput.description)"
+    'AskUserQuestion' {
+        "Ask: $($toolInput.questions[0].question)"
     }
     default { $toolName }
 }
