@@ -2,7 +2,7 @@
 
 Windows toast notifications for Claude Code.
 
-- **Permission** — notifies when Claude requests tool permission (PreToolUse)
+- **Permission** — notifies when Claude requests tool permission (PermissionRequest)
 - **Work Done** — notifies when Claude finishes a task (Stop), with a daily quote
 
 ## Requirements

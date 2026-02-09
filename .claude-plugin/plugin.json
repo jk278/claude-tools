@@ -1,7 +1,7 @@
 {
   "name": "claude-toast",
   "description": "Windows toast notifications for Claude Code — permission requests and task completion",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "jk278",
     "url": "https://github.com/jk278"
