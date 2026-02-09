@@ -17,6 +17,10 @@ Windows toast notifications for Claude Code.
 /plugin install claude-toast
 ```
 
+## Uninstall
+
+Run `/claude-toast reset` before uninstalling to remove the Start Menu shortcut.
+
 ## How it works
 
 On first run, a Start Menu shortcut is created with a custom `AppUserModelID` (`Claude Code`). This allows Windows to display the Claude icon as the toast sender. Subsequent notifications use the registered identity for a native look.
