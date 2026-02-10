@@ -4,6 +4,7 @@ Windows toast notifications for Claude Code.
 
 - **Permission** — notifies when Claude requests tool permission (PermissionRequest)
 - **Work Done** — notifies when Claude finishes a task (Stop), with a daily quote
+- **Statusline** — rich status bar showing model, git branch, context usage, API calls, cost, and duration
 
 ## Requirements
 
@@ -17,9 +18,13 @@ Windows toast notifications for Claude Code.
 /plugin install claude-toast
 ```
 
+## Statusline
+
+Run `/claude-toast:statusline` to configure. Displays model, directory, git branch, context %, API calls, cost, and session duration.
+
 ## Uninstall
 
-Run `/claude-toast reset` before uninstalling to remove the Start Menu shortcut.
+Run `/claude-toast:reset` before uninstalling to remove the Start Menu shortcut.
 
 ## How it works
 
