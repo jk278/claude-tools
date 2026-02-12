@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 # Permission hook notification via notify-send
+if [ -z "$DISPLAY" ] && [ -z "$WAYLAND_DISPLAY" ]; then
+  cat > /dev/null; printf '\a'; exit 0
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ICON="$SCRIPT_DIR/../../assets/help.png"
 

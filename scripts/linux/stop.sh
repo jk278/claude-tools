@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 # Stop hook notification with quote via notify-send
+if [ -z "$DISPLAY" ] && [ -z "$WAYLAND_DISPLAY" ]; then
+  cat > /dev/null; printf '\a'; exit 0
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ICON="$SCRIPT_DIR/../../assets/success.png"
 PRESETS="$SCRIPT_DIR/../../presets.json"
