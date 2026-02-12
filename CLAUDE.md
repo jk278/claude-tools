@@ -7,11 +7,15 @@ Windows toast notification plugin for Claude Code.
 ```
 assets/          Icons (favicon.ico, help.png, success.png)
 commands/        Slash commands (*.md with frontmatter)
-hooks/           Hook config → PermissionRequest, Stop
-scripts/         PowerShell scripts invoked by hooks
+hooks/           Empty (hooks registered via setup command)
+scripts/         PowerShell scripts
 presets.json     Built-in quote API definitions (read-only)
 config.json      User config: active API + custom APIs (gitignored)
 ```
+
+## Setup
+
+Run `/claude-toast:setup` to enable. Writes hooks and statusLine into `~/.claude/settings.json` and creates the Start Menu shortcut for toast sender identity.
 
 ## Hooks
 
@@ -31,7 +35,8 @@ Version in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` mu
 
 ## Scripts
 
-All scripts share an auto-init pattern: create Start Menu shortcut with `AppUserModelID` on first run for native toast sender identity.
+- `setup.ps1` — create Start Menu shortcut with `AppUserModelID` for toast sender identity
 - `permission.ps1` — switch on `tool_name` to build detail text
 - `stop.ps1` — fetch quote from active API, fallback to "Done"
+- `statusline.ps1` — rich status bar (model, git branch, context %, calls, cost, duration)
 - `reset.ps1` — remove Start Menu shortcut
