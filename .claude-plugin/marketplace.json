@@ -1,15 +1,15 @@
 {
-  "name": "claude-toast",
+  "name": "claude-tools",
   "owner": {
     "name": "jk278"
   },
   "metadata": {
     "description": "Toast notifications for Claude Code — permission requests and task completion",
-    "version": "0.4.1"
+    "version": "0.5.0"
   },
   "plugins": [
     {
-      "name": "claude-toast",
+      "name": "claude-tools",
       "source": "./",
       "description": "Toast notifications for Claude Code — permission requests and task completion",
       "category": "notification",

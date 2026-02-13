@@ -1,4 +1,4 @@
-# claude-toast
+# claude-tools
 
 Windows toast notification plugin for Claude Code.
 
@@ -7,6 +7,7 @@ Windows toast notification plugin for Claude Code.
 ```
 assets/          Icons (favicon.ico, help.png, success.png)
 commands/        Slash commands (*.md with frontmatter)
+skills/          Agent skills (SKILL.md per skill directory)
 hooks/           Empty (hooks registered via setup command)
 scripts/
   win/           Windows PowerShell scripts
@@ -17,7 +18,7 @@ config.json      User config: active API + custom APIs (gitignored)
 
 ## Setup
 
-Run `/claude-toast:setup` to enable. Writes hooks and statusLine into `~/.claude/settings.json` and creates the Start Menu shortcut for toast sender identity.
+Run `/claude-tools:setup` to enable. Writes hooks and statusLine into `~/.claude/settings.json` and creates the Start Menu shortcut for toast sender identity.
 
 ## Hooks
 

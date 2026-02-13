@@ -1,13 +1,13 @@
 {
-  "name": "claude-toast",
+  "name": "claude-tools",
   "description": "Toast notifications for Claude Code — permission requests and task completion",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "author": {
     "name": "jk278",
     "url": "https://github.com/jk278"
   },
-  "homepage": "https://github.com/jk278/claude-toast",
-  "repository": "https://github.com/jk278/claude-toast",
+  "homepage": "https://github.com/jk278/claude-tools",
+  "repository": "https://github.com/jk278/claude-tools",
   "license": "MIT",
   "keywords": ["windows", "toast", "notification", "permission", "alert"]
 }

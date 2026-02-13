@@ -1,30 +1,30 @@
-# claude-toast
+# claude-tools
 
-Windows toast notifications for Claude Code.
+Toast notifications, statusline, and agent skills for Claude Code.
 
 - **Permission** — notifies when Claude requests tool permission (PermissionRequest)
 - **Work Done** — notifies when Claude finishes a task (Stop), with a daily quote
 - **Statusline** — rich status bar showing model, git branch, context usage, API calls, cost, and duration
+- **Codex** — invoke OpenAI Codex CLI (codex exec, codex resume) from Claude Code
 
 ## Requirements
 
-- Windows 10+
-- PowerShell 5.1+
+- Windows 10+ or Linux
 
 ## Install
 
 ```
-/plugin marketplace add jk278/claude-toast
-/plugin install claude-toast
+/plugin marketplace add jk278/claude-tools
+/plugin install claude-tools
 ```
 
 ## Setup
 
-Run `/claude-toast:setup` to enable toast notifications and statusline. This writes hooks and statusLine config into `~/.claude/settings.json` and creates the Start Menu shortcut for toast sender identity.
+Run `/claude-tools:setup` to enable toast notifications and statusline. This writes hooks and statusLine config into `~/.claude/settings.json` and creates the Start Menu shortcut for toast sender identity.
 
 ## Uninstall
 
-Run `/claude-toast:reset` before uninstalling to remove the Start Menu shortcut.
+Run `/claude-tools:reset` before uninstalling to remove the Start Menu shortcut.
 
 ## How it works
 
