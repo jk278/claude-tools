@@ -14,6 +14,8 @@ i_refresh=$'\uf021' # nf-fa-refresh
 i_usd=$'\uf155'     # nf-fa-usd
 i_up=$'\uf093'      # nf-fa-upload
 i_down=$'\uf019'    # nf-fa-download
+i_calendar=$'\uf073' # nf-fa-calendar
+i_cloud=$'\uf0c2'    # nf-fa-cloud
 
 json=$(cat)
 model=$(echo "$json" | jq -r '.model.display_name')
@@ -98,6 +100,13 @@ fi
 # ===== Zenmux Usage =====
 zenmux_segment=""
 plugin_root="$(cd "$(dirname "$0")/../.." && pwd)"
+
+# Load .env once (shared by all provider blocks)
+_env_file="$plugin_root/.env"
+if [ -f "$_env_file" ]; then
+    set -a; source "$_env_file"; set +a
+fi
+
 usages_file="$plugin_root/usages.json"
 
 format_z_reset() {
@@ -118,11 +127,6 @@ z_col() {
 }
 
 if [ -f "$usages_file" ]; then
-  env_file="$plugin_root/.env"
-  if [ -f "$env_file" ]; then
-    set -a; source "$env_file"; set +a
-  fi
-
   zenmux_enabled=false
   IFS=',' read -ra _providers <<< "${ENABLED_PROVIDER:-}"
   for _p in "${_providers[@]}"; do
@@ -178,5 +182,62 @@ if [ -f "$usages_file" ]; then
   fi
 fi
 
+# ===== Weather =====
+weather_segment=""
+weather_file="$plugin_root/weather.json"
+
+if [ -f "$weather_file" ]; then
+    if [ "${QWEATHER_ENABLED:-}" = "true" ]; then
+        w_host_env=$(jq -r '.hostEnv'     "$weather_file")
+        w_loc_env=$(jq -r  '.locationEnv' "$weather_file")
+        w_key_env=$(jq -r  '.keyEnv'      "$weather_file")
+        w_host="${!w_host_env}"; w_loc="${!w_loc_env}"; w_key="${!w_key_env}"
+
+        if [ -z "$w_host" ] || [ -z "$w_loc" ] || [ -z "$w_key" ]; then
+            weather_segment=" · ${ESC}[31m${i_cloud} !cfg${ESC}[0m"
+        else
+            w_cache_file="/tmp/claude_weather_cache.txt"
+            w_now=$(date -u +%s)
+            w_temp=""; w_text=""; w_max=""; w_min=""
+
+            if [ -f "$w_cache_file" ]; then
+                IFS='|' read -r _wt _wmax _wmin _wts _wtxt < "$w_cache_file"
+                if (( w_now - _wts < 600 )) && [ -n "$_wt" ]; then
+                    w_temp="$_wt"; w_max="$_wmax"; w_min="$_wmin"; w_text="$_wtxt"
+                fi
+            fi
+
+            if [ -z "$w_temp" ]; then
+                _now_resp=$(curl -s --max-time 3 \
+                    "$w_host/v7/weather/now?location=$w_loc&lang=en" \
+                    -H "X-QW-Api-Key: $w_key" 2>/dev/null)
+                _fc_resp=$(curl -s --max-time 3 \
+                    "$w_host/v7/weather/3d?location=$w_loc&lang=en" \
+                    -H "X-QW-Api-Key: $w_key" 2>/dev/null)
+
+                _now_code=$(echo "$_now_resp" | jq -r '.code // empty' 2>/dev/null)
+                _fc_code=$(echo  "$_fc_resp"  | jq -r '.code // empty' 2>/dev/null)
+
+                if [ "$_now_code" = "200" ] && [ "$_fc_code" = "200" ]; then
+                    w_temp=$(echo "$_now_resp" | jq -r '.now.temp')
+                    w_text=$(echo "$_now_resp" | jq -r '.now.text')
+                    w_max=$(echo  "$_fc_resp"  | jq -r '.daily[0].tempMax')
+                    w_min=$(echo  "$_fc_resp"  | jq -r '.daily[0].tempMin')
+                    printf '%s|%s|%s|%s|%s' "$w_temp" "$w_max" "$w_min" "$w_now" "$w_text" > "$w_cache_file"
+                elif [ -n "$_now_resp" ] || [ -n "$_fc_resp" ]; then
+                    weather_segment=" · ${ESC}[31m${i_cloud} !api${ESC}[0m"
+                else
+                    weather_segment=" · ${ESC}[90m${i_cloud} …${ESC}[0m"
+                fi
+            fi
+
+            if [ -n "$w_temp" ]; then
+                weather_segment=" · ${i_cloud} ${ESC}[36m${w_temp}°${ESC}[0m ${w_text} ${ESC}[90m${w_min}~${w_max}°${ESC}[0m"
+            fi
+        fi
+    fi
+fi
+
 # Output
-echo "${ESC}[36m${i_bolt} ${model}${ESC}[0m · ${ESC}[34m${i_folder} ${current_dir}${ESC}[0m${git_branch} · ${progress} · ${calls} · ${cost_str} · ${i_clock} ${time_str}${zenmux_segment}"
+now_str="${ESC}[90m${i_calendar} ${ESC}[0m$(date +"%m-%d %H:%M")"
+echo "${ESC}[36m${i_bolt} ${model}${ESC}[0m · ${ESC}[34m${i_folder} ${current_dir}${ESC}[0m${git_branch} · ${progress} · ${calls} · ${cost_str} · ${i_clock} ${time_str}${zenmux_segment} · ${now_str}${weather_segment}"

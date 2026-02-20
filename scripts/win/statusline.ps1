@@ -17,6 +17,8 @@ $iRefresh  = [char]0xF021  # nf-fa-refresh
 $iUsd      = [char]0xF155  # nf-fa-usd
 $iUp       = [char]0xF093  # nf-fa-upload
 $iDown     = [char]0xF019  # nf-fa-download
+$iCalendar = [char]0xF073  # nf-fa-calendar
+$iCloud    = [char]0xF0C2  # nf-fa-cloud
 $inputJson = $input | Out-String | ConvertFrom-Json
 $model = $inputJson.model.display_name
 $currentDir = Split-Path -Leaf $inputJson.workspace.current_dir
@@ -107,18 +109,20 @@ else {
 # ===== Zenmux Usage =====
 $zenmuxSegment = ""
 $pluginRoot = (Get-Item "$PSScriptRoot\..\.." ).FullName
+
+# Load .env once (shared by all provider blocks)
+$envFile = Join-Path $pluginRoot ".env"
+if (Test-Path $envFile) {
+    Get-Content $envFile | ForEach-Object {
+        if ($_ -match "^([^#][^=]*)=(.*)$") {
+            [System.Environment]::SetEnvironmentVariable($matches[1].Trim(), $matches[2].Trim())
+        }
+    }
+}
+
 $usagesFile = Join-Path $pluginRoot "usages.json"
 
 if (Test-Path $usagesFile) {
-    $envFile = Join-Path $pluginRoot ".env"
-    if (Test-Path $envFile) {
-        Get-Content $envFile | ForEach-Object {
-            if ($_ -match "^([^#][^=]*)=(.*)$") {
-                [System.Environment]::SetEnvironmentVariable($matches[1].Trim(), $matches[2].Trim())
-            }
-        }
-    }
-
     $enabledProviders = ([System.Environment]::GetEnvironmentVariable("ENABLED_PROVIDER") -split ",") | ForEach-Object { $_.Trim() }
     if ($enabledProviders -contains "zenmux") {
         $usages = Get-Content $usagesFile | ConvertFrom-Json
@@ -187,5 +191,75 @@ if (Test-Path $usagesFile) {
     }
 }
 
+# ===== Weather =====
+$weatherSegment = ""
+$weatherFile = Join-Path $pluginRoot "weather.json"
+
+if (Test-Path $weatherFile) {
+    $weatherEnabled = [System.Environment]::GetEnvironmentVariable("QWEATHER_ENABLED")
+    if ($weatherEnabled -eq "true") {
+        $wCfg     = Get-Content $weatherFile | ConvertFrom-Json
+        $wHost    = [System.Environment]::GetEnvironmentVariable($wCfg.hostEnv)
+        $wLoc     = [System.Environment]::GetEnvironmentVariable($wCfg.locationEnv)
+        $wKey     = [System.Environment]::GetEnvironmentVariable($wCfg.keyEnv)
+
+        if (-not ($wHost -and $wLoc -and $wKey)) {
+            $weatherSegment = " · $ESC[31m${iCloud} !cfg$ESC[0m"
+        } else {
+            $wCacheFile = "$env:TEMP\claude_weather_cache.txt"
+            $wNow       = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+            $wTemp = $null; $wText = $null; $wMax = $null; $wMin = $null
+
+            if (Test-Path $wCacheFile) {
+                $wParts = (Get-Content $wCacheFile -Raw).Trim() -split '\|', 5
+                if ($wParts.Count -eq 5 -and ($wNow - [long]$wParts[3]) -lt 600) {
+                    $wTemp = $wParts[0]; $wMax = $wParts[1]; $wMin = $wParts[2]; $wText = $wParts[4]
+                }
+            }
+
+            if ($null -eq $wTemp) {
+                try {
+                    $nowJob = $null; $fcJob = $null
+                    $wHeaders = @{ "X-QW-Api-Key" = $wKey }
+                    $nowJob = Start-Job {
+                        param($h, $l, $hdr)
+                        Invoke-RestMethod -Uri "$h/v7/weather/now?location=$l&lang=en" -Headers $hdr -TimeoutSec 3
+                    } -ArgumentList $wHost, $wLoc, $wHeaders
+                    $fcJob = Start-Job {
+                        param($h, $l, $hdr)
+                        Invoke-RestMethod -Uri "$h/v7/weather/3d?location=$l&lang=en" -Headers $hdr -TimeoutSec 3
+                    } -ArgumentList $wHost, $wLoc, $wHeaders
+
+                    $null = Wait-Job $nowJob, $fcJob -Timeout 4
+                    $nowResp = Receive-Job $nowJob -ErrorAction SilentlyContinue
+                    $fcResp  = Receive-Job $fcJob  -ErrorAction SilentlyContinue
+
+                    if ($nowResp.code -eq "200" -and $fcResp.code -eq "200") {
+                        $wTemp = $nowResp.now.temp
+                        $wText = $nowResp.now.text
+                        $wMax  = $fcResp.daily[0].tempMax
+                        $wMin  = $fcResp.daily[0].tempMin
+                        "$wTemp|$wMax|$wMin|$wNow|$wText" | Out-File $wCacheFile -Encoding UTF8 -NoNewline
+                    } elseif ($nowResp -or $fcResp) {
+                        $weatherSegment = " · $ESC[31m${iCloud} !api$ESC[0m"
+                    } else {
+                        $weatherSegment = " · $ESC[90m${iCloud} …$ESC[0m"
+                    }
+                } catch {
+                    $weatherSegment = " · $ESC[90m${iCloud} …$ESC[0m"
+                } finally {
+                    if ($nowJob) { Remove-Job $nowJob -Force -ErrorAction SilentlyContinue }
+                    if ($fcJob)  { Remove-Job $fcJob  -Force -ErrorAction SilentlyContinue }
+                }
+            }
+
+            if ($null -ne $wTemp) {
+                $weatherSegment = " · ${iCloud} $ESC[36m${wTemp}°$ESC[0m $wText $ESC[90m${wMin}~${wMax}°$ESC[0m"
+            }
+        }
+    }
+}
+
 # ===== Output =====
-Write-Output "$ESC[36m$iBolt $model$ESC[0m · $ESC[34m$iFolder $currentDir$ESC[0m$gitBranch · $progress · $calls · $costStr · $iClock $timeStr$zenmuxSegment"
+$nowStr = "$ESC[90m$iCalendar $ESC[0m" + (Get-Date -Format "MM-dd HH:mm")
+Write-Output "$ESC[36m$iBolt $model$ESC[0m · $ESC[34m$iFolder $currentDir$ESC[0m$gitBranch · $progress · $calls · $costStr · $iClock $timeStr$zenmuxSegment · $nowStr$weatherSegment"

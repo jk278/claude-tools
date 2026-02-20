@@ -14,6 +14,8 @@ scripts/
   linux/         Linux shell scripts
 presets.json     Built-in quote API definitions (read-only)
 config.json      User config: active API + custom APIs (gitignored)
+usages.json      Usage provider config: env var name declarations (committed)
+weather.json     Weather config: env var name declarations (committed)
 ```
 
 ## Setup
@@ -43,6 +45,14 @@ Run `/claude-tools:config` to edit plugin config files. Prints plugin root path,
 - Config format: `{ "<provider>": { "sessionIdEnv": "VAR_NAME", "sessionSigEnv": "VAR_NAME" } }`
 - When debugging usage logic, do not print resolved values of cookie env vars
 
+## Weather
+
+- Config in `weather.json`: declares env var names for `hostEnv`, `locationEnv`, `keyEnv` (committed)
+- Secrets in `.env`: `QWEATHER_ENABLED=true`, `QWEATHER_HOST`, `QWEATHER_LOCATION`, `QWEATHER_KEY` (gitignored)
+- Displays: `☁ 15° 多云 13~22°` — real-time temp+condition from `/v7/weather/now` + today's high/low from `/v7/weather/3d`
+- Cache: 10 minutes at `$TEMP\claude_weather_cache.txt` (win) / `/tmp/claude_weather_cache.txt` (linux)
+- Auth: `X-QW-Api-Key` header; API host is per-account (from QWeather console)
+
 ## Versioning
 
 Version in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` must stay in sync. Bump both when releasing.
@@ -52,5 +62,5 @@ Version in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` mu
 - `win/setup.ps1` — create Start Menu shortcut with `AppUserModelID` for toast sender identity
 - `win/permission.ps1` — switch on `tool_name` to build detail text
 - `win/stop.ps1` — fetch quote from active API, fallback to "Done"
-- `win/statusline.ps1` — rich status bar (model, git branch, context %, calls, cost, duration)
+- `win/statusline.ps1` — rich status bar (model, git branch, context %, calls, cost, duration, datetime, weather)
 

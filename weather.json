@@ -1,0 +1,5 @@
+{
+  "hostEnv": "QWEATHER_HOST",
+  "locationEnv": "QWEATHER_LOCATION",
+  "keyEnv": "QWEATHER_KEY"
+}
