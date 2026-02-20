@@ -10,6 +10,7 @@ Toast notifications, statusline, and agent skills for Claude Code.
 ## Requirements
 
 - Windows 10+ with PowerShell 7 (`pwsh`) or Linux
+- Terminal using a [Nerd Font](https://www.nerdfonts.com/) for statusline icons (recommended: [JetBrains Maple Mono](https://github.com/SpaceTimee/Fusion-JetBrainsMapleMono))
 
 ## Install
 
