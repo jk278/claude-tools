@@ -32,6 +32,10 @@ Run `/claude-tools:setup` to enable. Writes hooks and statusLine into `~/.claude
 - Default active: `zenquotes` (when no config.json)
 - Config format: `{ "active": "<name>", "apis": { "<name>": { "url", "parse", "field?" } } }`
 
+## Config Command
+
+Run `/claude-tools:config` to edit plugin config files. Prints plugin root path, opens `config.json` and `.env` with `zed` → `code` → shows paths as fallback.
+
 ## Usage Providers
 
 - Provider config in `usages.json`: declares env var names per provider (committed)
