@@ -22,6 +22,20 @@ Toast notifications, statusline, and agent skills for Claude Code.
 
 Run `/claude-tools:setup` to enable toast notifications and statusline. This writes hooks and statusLine config into `~/.claude/settings.json` and creates the Start Menu shortcut for toast sender identity.
 
+## Update
+
+```
+/plugin marketplace update
+/plugin update claude-tools
+```
+
+After updating, restart your shell — if using VS Code or Alacritty, restart the application. Then re-run setup and config:
+
+```
+/claude-tools:setup
+/claude-tools:config
+```
+
 ## Uninstall
 
 Uninstalling the plugin does not remove the Start Menu shortcut. Setup may have installed the BurntToast module if it wasn't already present. Remove manually if needed:

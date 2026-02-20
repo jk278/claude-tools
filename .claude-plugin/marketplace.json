@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Toast notifications for Claude Code — permission requests and task completion",
-    "version": "0.6.0"
+    "version": "0.6.1"
   },
   "plugins": [
     {
