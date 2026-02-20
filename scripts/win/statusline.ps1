@@ -93,5 +93,67 @@ else {
     $costStr = "$ESC[90m↑$ESC[0m$ESC[38;5;136m$inFmt$ESC[0m $ESC[90m↓$ESC[0m$ESC[38;5;136m$outFmt$ESC[0m"
 }
 
+# ===== Zenmux Usage =====
+$zenmuxSegment = ""
+$pluginRoot = (Get-Item "$PSScriptRoot\..\.." ).FullName
+$usagesFile = Join-Path $pluginRoot "usages.json"
+
+if (Test-Path $usagesFile) {
+    $envFile = Join-Path $pluginRoot ".env"
+    if (Test-Path $envFile) {
+        Get-Content $envFile | ForEach-Object {
+            if ($_ -match "^([^#][^=]*)=(.*)$") {
+                [System.Environment]::SetEnvironmentVariable($matches[1].Trim(), $matches[2].Trim())
+            }
+        }
+    }
+
+    $enabledProviders = ([System.Environment]::GetEnvironmentVariable("ENABLED_PROVIDER") -split ",") | ForEach-Object { $_.Trim() }
+    if ($enabledProviders -contains "zenmux") {
+        $usages = Get-Content $usagesFile | ConvertFrom-Json
+        $sessionId  = [System.Environment]::GetEnvironmentVariable($usages.zenmux.sessionIdEnv)
+        $sessionSig = [System.Environment]::GetEnvironmentVariable($usages.zenmux.sessionSigEnv)
+
+        if ($sessionId -and $sessionSig) {
+            $zCacheFile = "$env:TEMP\zenmux_usage_cache.txt"
+            $zNow = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+            $weekRate = $null; $hour5Rate = $null
+
+            if (Test-Path $zCacheFile) {
+                $zParts = (Get-Content $zCacheFile) -split "\|"
+                if ($zParts.Count -eq 3 -and ($zNow - [long]$zParts[2]) -lt 60) {
+                    $weekRate = [double]$zParts[0]; $hour5Rate = [double]$zParts[1]
+                }
+            }
+
+            if ($null -eq $weekRate) {
+                try {
+                    $resp = Invoke-RestMethod `
+                        -Uri "https://zenmux.ai/api/subscription/get_current_usage" `
+                        -Headers @{ "Cookie" = "sessionId=$sessionId; sessionId.sig=$sessionSig" } `
+                        -TimeoutSec 3
+                    if ($resp.success) {
+                        $weekRate  = ($resp.data | Where-Object { $_.periodType -eq "week"   }).usedRate
+                        $hour5Rate = ($resp.data | Where-Object { $_.periodType -eq "hour_5" }).usedRate
+                        "$weekRate|$hour5Rate|$zNow" | Out-File $zCacheFile -Encoding UTF8
+                    }
+                } catch {}
+            }
+
+            if ($null -ne $weekRate -and $null -ne $hour5Rate) {
+                function Get-ZUsageColor($r) {
+                    $p = $r * 100
+                    if ($p -ge 90) { "$ESC[31m" } elseif ($p -ge 70) { "$ESC[33m" } else { "$ESC[32m" }
+                }
+                $wPct  = [math]::Round($weekRate  * 100)
+                $h5Pct = [math]::Round($hour5Rate * 100)
+                $wCol  = Get-ZUsageColor $weekRate
+                $h5Col = Get-ZUsageColor $hour5Rate
+                $zenmuxSegment = " · Z: ${wCol}${wPct}%$ESC[0m ${h5Col}${h5Pct}%$ESC[0m"
+            }
+        }
+    }
+}
+
 # ===== Output =====
-Write-Output "$ESC[36m⚡$model$ESC[0m · $ESC[34m□ $currentDir$ESC[0m$gitBranch · $progress · $calls · $costStr · ⧖ $timeStr"
+Write-Output "$ESC[36m⚡$model$ESC[0m · $ESC[34m□ $currentDir$ESC[0m$gitBranch · $progress · $calls · $costStr · ⧖ $timeStr$zenmuxSegment"

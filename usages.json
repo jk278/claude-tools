@@ -1,0 +1,6 @@
+{
+  "zenmux": {
+    "sessionIdEnv": "ZENMUX_SESSION_ID",
+    "sessionSigEnv": "ZENMUX_SESSION_SIG"
+  }
+}

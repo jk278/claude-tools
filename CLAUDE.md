@@ -32,6 +32,14 @@ Run `/claude-tools:setup` to enable. Writes hooks and statusLine into `~/.claude
 - Default active: `zenquotes` (when no config.json)
 - Config format: `{ "active": "<name>", "apis": { "<name>": { "url", "parse", "field?" } } }`
 
+## Usage Providers
+
+- Provider config in `usages.json`: declares env var names per provider (committed)
+- Secrets in `.env`: `ENABLED_PROVIDER`, session cookies (gitignored — never commit)
+- A provider is active when its name appears in `ENABLED_PROVIDER` (comma-separated)
+- Config format: `{ "<provider>": { "sessionIdEnv": "VAR_NAME", "sessionSigEnv": "VAR_NAME" } }`
+- When debugging usage logic, do not print resolved values of cookie env vars
+
 ## Versioning
 
 Version in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` must stay in sync. Bump both when releasing.
