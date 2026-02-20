@@ -35,7 +35,7 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/linux/setup.sh"
 
 ### 2. Read `~/.claude/settings.json` (create `{}` if missing). Preserve all existing settings.
 
-### 3. Merge `statusLine` into `~/.claude/settings.json` (skip if already present, no agents):
+### 3. Always overwrite `statusLine` in `~/.claude/settings.json` with the current plugin path:
 
 **Windows:**
 ```json
