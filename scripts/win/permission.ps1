@@ -1,4 +1,10 @@
 # Permission toast notification
+$throttleFile = "$env:TEMP\claude_permission_throttle.txt"
+$now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+$last = if (Test-Path $throttleFile) { [long](Get-Content $throttleFile) } else { 0 }
+$now | Out-File $throttleFile -Encoding UTF8
+if (($now - $last) -lt 60) { exit 0 }
+
 $AssetsDir = (Resolve-Path (Join-Path $PSScriptRoot '..\..\assets')).Path
 $HelpIconPath = Join-Path $AssetsDir 'help.png'
 
