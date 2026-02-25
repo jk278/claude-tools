@@ -23,5 +23,6 @@ Files:
    a. Check if `$PRIOR_VERSION_ROOT/.env` exists.
    b. If yes, copy it to `$CLAUDE_PLUGIN_ROOT/.env` via Bash `cp`; otherwise copy `.env.example`.
 5. Print a summary of all copy actions taken in steps 3–4.
-6. Ask the user which file to configure: **Usages/Weather** (`.env`) or **Quote API** (`config.json`).
-7. Detect editor: check `zed` first, then `code`. Open the selected file. If neither is available, print the absolute path of the file and tell the user to edit it manually.
+6. If any file was copied from a prior version, report success, remind the user to run `/claude-tools:config` again to customize, and stop.
+7. Ask the user which file to configure: **Usages/Weather** (`.env`) or **Quote API** (`config.json`).
+8. Detect editor: check `zed` first, then `code`. Open the selected file. If neither is available, print the absolute path of the file and tell the user to edit it manually.
